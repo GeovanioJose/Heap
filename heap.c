@@ -1,0 +1,205 @@
+#include "heap.h"
+
+void help(){
+	printf("-h			: mostra o help\n");
+	printf("-o <arquivo>		: redireciona a saida para o ‘‘arquivo’’\n");
+	printf("-f <arquivo>		: indica o ‘‘arquivo’’ que contém os dados a serem adicionados na Heap\n");
+	printf("-m			: indica que a estrutura será uma heap mínima\n");
+};
+
+int pai(int i){
+  return i/2;
+};
+
+int esq(int i){
+  return 2*i;
+};
+
+int dir(int i){
+  return 2*i + 1;
+};
+
+void maxHeapify(HEAP * h, int i){
+        int e = esq(i);
+        int d = dir(i);
+        int temp;
+        int maior = i;
+        if ((e <= h->tam) && (h->v[e] > h->v[i])){
+                maior = e;
+        }
+        if ((d <= h->tam) && (h->v[d] > h->v[maior])){
+                maior = d;
+        }
+        if (maior != i) {
+                temp = h->v[i];
+                h->v[i] = h->v[maior];
+                h->v[maior] = temp;
+                maxHeapify(h,maior);
+        }
+};
+
+void minHeapify(HEAP * h, int i){
+        int e = esq(i);
+        int d = dir(i);
+        int temp;
+        int menor = i;
+        if ((e <= h->tam) && (h->v[e] < h->v[i])){
+                menor = e;
+        }
+        if ((d <= h->tam) && (h->v[d] < h->v[menor])){
+                menor = d;
+        }
+        if (menor != i) {
+                temp = h->v[i];
+                h->v[i] = h->v[menor];
+                h->v[menor] = temp;
+                maxHeapify(h,menor);
+        }
+};
+
+
+void construirHeapMaximo(HEAP * h){
+        int i;
+         
+        for (i = h->tam/2;i > 0; i--){
+                maxHeapify(h,i);
+        }
+}
+void construirHeapMinimo(HEAP * h){
+        int i;
+         
+        for (i = h->tam/2;i > 0; i--){
+                minHeapify(h,i);
+        }
+}
+
+int inserirForaDeOrdem(HEAP * h, int valor){
+        if (h->tam < MAX){
+                (h->tam)++;
+                h->v[h->tam] = valor;
+                return 1;
+        }
+        return 0;
+};
+
+void imprimirArranjo(HEAP *h){
+        int tamanho = h->tam;
+        int i;
+        for ( i = 1;i <= tamanho; i++) {
+                printf("%d ", h->v[i]);               
+        }
+        printf("\n");
+};
+
+
+
+void heapSortMin(HEAP * h){
+        int tamanho = h->tam;
+        int i, temp;
+
+        construirHeapMinimo(h);  
+
+        for (i = tamanho ; i > 1; i--){
+                temp = h->v[1];
+                h->v[1] = h->v[i];
+                h->v[i] = temp;
+                   
+                (h->tam)--;
+                minHeapify(h,1);
+        }
+         
+        h->tam = tamanho;
+};
+
+void heapSortMax(HEAP * h){
+        int tamanho = h->tam;
+        int i, temp;
+
+        construirHeapMaximo(h);  
+
+        for (i = tamanho; i>1 ;i--){
+                temp = h->v[1];
+                h->v[1] = h->v[i];
+                h->v[i] = temp;
+                   
+                (h->tam)--;
+                maxHeapify(h,1);
+        }
+         
+        h->tam = tamanho;;
+}
+
+int inserirHeap(HEAP * h, int chave){
+        int i, temp;
+        if (h->tam == MAX)
+                return 0;
+        
+        (h->tam)++;
+        i = h->tam;
+        h->v[i] = chave;
+
+        while ((i>1) && (h->v[pai(i)]<h->v[i])){
+                temp = h->v[i];
+                h->v[i] = h->v[pai(i)];
+                h->v[pai(i)] = temp;       
+                i = pai(i);
+        }
+
+        return 1;
+};
+void lerArquivoMax(HEAP *h, char *argv){
+	FILE *fp;	
+	int dado = 0;		
+	int cont = 0;
+	
+	fp = (FILE *) fopen(argv, "r");	
+	if(fp != NULL) {
+		while(fscanf(fp, "%i\n", &dado) != EOF){
+			inserirForaDeOrdem(h, dado);
+		}
+		heapSortMax(h);
+		fclose(fp);		
+	}else{
+		printf("Erro na abertura do arquivo!\n");
+	}
+	
+	
+};
+
+void lerArquivoMin(HEAP *h, char *argv){
+	FILE *fp;	
+	int dado = 0;		
+	int cont = 0;
+	
+	fp = (FILE *) fopen(argv, "r");	
+	if(fp != NULL) {
+		while(fscanf(fp, "%i\n", &dado) != EOF){
+			inserirForaDeOrdem(h, dado);
+		}
+		heapSortMin(h);
+		fclose(fp);		
+	}else{
+		printf("Erro na abertura do arquivo!\n");
+	}
+	
+	
+};
+
+void heapSalvar(HEAP* h, char *argv){
+	FILE *fp;	
+	fp = (FILE *) fopen(argv, "w");	
+	if(fp != NULL) {
+		lerheap(h, fp);
+		fclose(fp);		
+	}else{
+		printf("Erro na abertura do arquivo!\n");
+	}
+};
+
+void lerheap(HEAP *h, FILE *fp){
+	int tamanho = h->tam + 1;
+	int i;
+	for (i = 1;i < tamanho ;i++){
+		fprintf(fp, "%d ", h->v[i]);
+	}
+}
